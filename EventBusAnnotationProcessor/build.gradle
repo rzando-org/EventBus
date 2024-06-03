@@ -1,0 +1,62 @@
+apply plugin: 'java'
+
+group = rootProject.group
+version = rootProject.version
+
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+    implementation project(':eventbus-java')
+    implementation 'de.greenrobot:java-common:2.3.1'
+
+    // Generates the required META-INF descriptor to make the processor incremental.
+    def incap = '0.2'
+    compileOnly "net.ltgt.gradle.incap:incap:$incap"
+    annotationProcessor "net.ltgt.gradle.incap:incap-processor:$incap"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            srcDir 'res'
+        }
+    }
+}
+
+javadoc {
+    title = "EventBus Annotation Processor ${version} API"
+	options.bottom = 'Available under the Apache License, Version 2.0 - <i>Copyright &#169; 2015-2020 <a href="https://greenrobot.org">greenrobot.org</a>. All Rights Reserved.</i>'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set("javadoc")
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set("sources")
+    from sourceSets.main.allSource
+}
+
+apply from: rootProject.file("gradle/publish.gradle")
+// Set project-specific properties
+afterEvaluate {
+    publishing.publications {
+        mavenJava(MavenPublication) {
+            artifactId = "eventbus-annotation-processor"
+
+            from components.java
+            artifact javadocJar
+            artifact sourcesJar
+            pom {
+                name = "EventBus Annotation Processor"
+                description = "Precompiler for EventBus Annotations."
+                packaging = "jar"
+            }
+        }
+    }
+}

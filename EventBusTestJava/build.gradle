@@ -1,0 +1,25 @@
+apply plugin: "java-library"
+
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_1_8
+
+// we have tests in the main source set so they can be shared with the Android test module
+// to make Gradle pick them up, add the dir to the test source set
+sourceSets {
+    test {
+        java {
+            srcDirs += ["src/main/java"]
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: "*.jar")
+    implementation(project(":eventbus-java"))
+    annotationProcessor project(":eventbus-annotation-processor")
+    implementation "junit:junit:4.13.2"
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [ "-AeventBusIndex=org.greenrobot.eventbus.EventBusJavaTestsIndex" ]
+}
